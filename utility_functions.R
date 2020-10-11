@@ -13,3 +13,4 @@ pixelCounter <- function(arr, size) {
   }
   return(counter);
 }
+
