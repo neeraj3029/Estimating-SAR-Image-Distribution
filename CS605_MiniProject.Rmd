@@ -1,0 +1,193 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library('tiff')
+library(EBImage)
+library(raster)
+```
+
+Function pixelCounter counts pixel occurances of different pixel values.
+```{r}
+pixelCounter <- function(arr, size) {
+  counter <- rep(0, times=size);
+  for(i in 1:length(arr)) {
+    counter[arr[i]-1]  = counter[arr[i]-1] + 1;
+  }
+  return(counter);
+}
+```
+
+```{r}
+
+```
+
+Step1: Plot the image and Histogram of Pixel values
+```{r}
+img = raster("/Users/apple/labs/CS605/mproject/t59.tiff")
+plot(img, col = gray.colors(10, start = 0.01, end = 1))
+
+```
+
+
+```{r}
+obs <- hist(img, nclass=256, maxpixels=10000000, xlab = 'pixel value', ylab = 'Count', main='Observed Frequency Distribution')
+obs
+```
+
+Step2: Parameter esimation using Maximum Likelihood Estimation. 
+File estimate_params.R has implementation of MLE estimator functions.
+```{r}
+gamma_params <- estimate_gamma_parameters(img[]);
+gaussian_params <- estimate_gaussian_params(img[]);
+poisson_params <- estimate_poission_params(img[]);
+```
+
+```{r}
+img[img == 0] = 1
+total_samples <- length(img);
+observed_counts <- customCounter(as.data.frame(img)$t59, 256);
+
+est_gamma_dist <- dgamma(x = seq(1, 256, by=1), shape = gamma_params[1], scale = gamma_params[2]);
+
+est_gaussian_dist <- dnorm(x = seq(1, 256, by=1), mean = gaussian_params[1], sd = gaussian_params[2]);
+
+
+exp_values_gamma <- c();
+exp_values_gaussian <- c();
+
+for(i in 1:length(observed_counts)) {
+  e_k_gamma = est_gamma_dist[i] * total_samples;
+  e_k_gaussian = est_gaussian_dist[i] * total_samples;
+  exp_values_gamma <- c(exp_values_gamma, e_k_gamma);
+  exp_values_gaussian <- c(exp_values_gaussian, e_k_gaussian);
+}
+
+hist(img, nclass=256, maxpixels=10000000, col = 'yellow')
+lines(exp_values_gamma, type='l', col='red', lwd=2)
+lines(exp_values_gaussian, type='l', col='blue', lwd=2)
+legend(180, 2500, legend=c("Est. Gamma Dist.", "Est. Gaussian Dist."),
+       col=c("red", "blue"), lty=1:1, cex=0.8)
+
+
+```
+Next step would be to define a function that merges adjacent bins
+
+```{r}
+mergeBins <- function(arr, times) {
+  if(times == 0) {
+    result <- arr;
+  } else {
+    len = length(arr);
+    new_arr <- c()
+    v = 0;
+    for(i in 1:len) {
+      v = v + arr[i];
+      if(i%%2 == 0) {
+        new_arr <- c(new_arr, v)
+        v = 0;  
+      }
+    }
+    result <- mergeBins(new_arr, times-1);
+  }
+  return(result);
+}
+```
+
+
+Enforcing E(k) >= 5 from right end
+```{r}
+sumv_gamma = 0
+sumv_gaussian = 0
+sum2 = 0
+dim = length(exp_values_gamma)
+sum3_gamma = 0;
+sum3_gaussian = 0;
+for (i in seq(length(exp_values_gamma),1,by=-1)){
+  if(exp_values_gamma[i] && exp_values_gaussian[i] >= 5){
+    dim = i;
+    break;
+  }
+  sumv_gamma = sumv_gamma + exp_values_gamma[i]; 
+  sumv_gaussian = sumv_gaussian + exp_values_gaussian[i];
+  sum2 = sum2 + observed_counts[i]; 
+  sum3_gamma = sum3_gamma + est_gamma_dist[i];
+  sum3_gaussian = sum3_gaussian + est_gaussian_dist[i];
+}
+
+if(sumv_gaussian > 0) {
+  estimated_values_gamma_ = c(exp_values_gamma[1:dim], sumv_gamma);
+  estimated_values_gaussian_ = c(exp_values_gaussian[1:dim], sumv_gaussian);
+  est_gamma_dist_ = c(est_gamma_dist[1:dim], sum3_gamma);
+  est_gaussian_dist_ = c(est_gaussian_dist[1:dim], sum3_gaussian);
+  observed_counts_ = c(observed_counts[1:dim], sum2);
+} else {
+  estimated_values_gamma_ = exp_values_gamma
+  estimated_values_gaussian_ = exp_values_gaussian
+  est_gamma_dist_ = est_gamma_dist
+  est_gaussian_dist_ = est_gaussian_dist
+  observed_counts_ = observed_counts
+}
+```
+
+Enforcing E(k) >= 5 from left end
+```{r}
+dim = 1;
+sumv_gamma = 0;
+sumv_gaussian = 0;
+sumv2 = 0;
+sumv3_gamma = 0;
+sumv3_gaussian = 0;
+while(estimated_values_gamma_[dim] < 5 && estimated_values_gaussian_[dim]) {
+  dim = dim+1;
+  sumv_gamma = sumv+estimated_values_gamma_[dim];
+  sumv_gaussian = sumv+estimated_values_gaussian_[dim];
+  sumv2 = sum2+observed_counts_[dim];
+  sumv3_gamma = sum3+est_gamma_dist_[dim];
+  sumv3_gaussian = sum3+est_gaussian_dist_[dim];
+}
+
+curr_length = length(est_gaussian_dist_);
+
+if(sumv > 0) {
+  estimated_values_gamma__ = c(sumv_gamma, estimated_values_gamma_[dim:curr_length]);
+  estimated_values_gaussian__ = c(sumv_gaussian, estimated_values_gaussian_[dim:curr_length]);
+  est_gamma_dist__ = c(sum3_gamma, est_gamma_dist_[dim:curr_length]);
+  est_gaussian_dist__ = c(sum3_gaussian, est_gaussian_dist_[dim:curr_length]);
+  observed_counts__ = c(sum2, observed_counts_[dim:curr_length]);
+} else {
+  estimated_values_gamma__ =  estimated_values_gamma_;
+  estimated_values_gaussian__ = estimated_values_gaussian_;
+  
+  est_gamma_dist__ = est_gamma_dist_;
+  est_gaussian_dist__ = est_gaussian_dist_;
+  observed_counts__ = observed_counts_;
+}
+```
+
+
+
+
+```{r}
+# Add better x and y
+plot(estimated_values_gamma__, type='l', col='blue', lwd=2)
+lines(estimated_values_gaussian__, type='l', col='orange', lwd=2)
+#lines(observed_counts__, col = 'black', type='l',lwd=2)
+legend(180, 2500, legend=c("Est. Gamma Dist.", "Sample distribution"),
+       col=c("blue", "green"), lty=1:1, cex=0.8)
+```
+
+
+```{r}
+for(i in 1:10) {
+  sprintf(i , " ",  i);
+}
+```
+
+
