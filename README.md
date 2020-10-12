@@ -60,3 +60,7 @@ SAR Images are known to be affected by Speckle noise, which arises as a conseque
 ### Data Sources
 
 [Alaska Satellite Facility](https://asf.alaska.edu/)
+
+### Developers
+- [Neeraj Rajpurohit](https://github.com/neeraj3029/)
+- [Akshita Agarwalla](https://github.com/akshitaagarwa11a/)
