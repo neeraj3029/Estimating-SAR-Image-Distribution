@@ -1,4 +1,4 @@
-estimate_gamma_parameters <- function(pixels) {
+estimate_gamma_parameters <- function(pixels, plot) {
   mean_of_log <- unname(summary(log(pixels)))[4]
   log_of_mean <- log(unname(summary(pixels))[4])
   mean_ <- unname(summary(pixels))[4]
@@ -9,8 +9,9 @@ estimate_gamma_parameters <- function(pixels) {
     a_iterr <- c(a_iterr, a_hat)
   }
   b_hat = mean_/a_hat
-  
-  plot(a_iterr, type = 'l', ylab = 'Estimated gamma paramter', xlab = 'iteration')
+  if(plot == TRUE) {
+    plot(a_iterr, type = 'l', ylab = 'Estimated gamma paramter', xlab = 'iteration')
+  }
   return(c(a_hat, mean_/a_hat))
 }
 

@@ -14,3 +14,21 @@ pixelCounter <- function(arr, size) {
   return(counter);
 }
 
+mergeBins <- function(arr, times) {
+  if(times == 0) {
+    result <- arr;
+  } else {
+    len = length(arr);
+    new_arr <- c()
+    v = 0;
+    for(i in 1:len) {
+      v = v + arr[i];
+      if(i%%2 == 0) {
+        new_arr <- c(new_arr, v)
+        v = 0;  
+      }
+    }
+    result <- mergeBins(new_arr, times-1);
+  }
+  return(result);
+}
