@@ -35,8 +35,8 @@ main <- function(imageName) {
     
     #Enforcing E(k) >= 5 from right end
     
-    sumv_gamma = 0
-    sumv_gaussian = 0
+    sum_gaussian = 0
+    sum_gaussian = 0
     sum2 = 0
     dim = length(exp_values_gamma)
     sum3_gamma = 0;
@@ -46,16 +46,16 @@ main <- function(imageName) {
         dim = i;
         break;
       }
-      sumv_gamma = sumv_gamma + exp_values_gamma[i]; 
-      sumv_gaussian = sumv_gaussian + exp_values_gaussian[i];
+      sum_gaussian = sum_gaussian + exp_values_gamma[i]; 
+      sum_gaussian = sum_gaussian + exp_values_gaussian[i];
       sum2 = sum2 + observed_counts[i]; 
       sum3_gamma = sum3_gamma + est_gamma_dist[i];
       sum3_gaussian = sum3_gaussian + est_gaussian_dist[i];
     }
     
-    if(sumv_gaussian > 0) {
-      estimated_values_gamma_ = c(exp_values_gamma[1:dim], sumv_gamma);
-      estimated_values_gaussian_ = c(exp_values_gaussian[1:dim], sumv_gaussian);
+    if(sum_gaussian > 0) {
+      estimated_values_gamma_ = c(exp_values_gamma[1:dim], sum_gaussian);
+      estimated_values_gaussian_ = c(exp_values_gaussian[1:dim], sum_gaussian);
       est_gamma_dist_ = c(est_gamma_dist[1:dim], sum3_gamma);
       est_gaussian_dist_ = c(est_gaussian_dist[1:dim], sum3_gaussian);
       observed_counts_ = c(observed_counts[1:dim], sum2);
@@ -70,28 +70,28 @@ main <- function(imageName) {
     #Enforcing E(k) >= 5 from left end
     
     dim = 1;
-    sumv_gamma = 0;
-    sumv_gaussian = 0;
-    sumv2 = 0;
-    sumv3_gamma = 0;
-    sumv3_gaussian = 0;
+    sum_gaussian = 0;
+    sum_gaussian = 0;
+    observation_sum = 0;
+    sum_d_gamma = 0;
+    sum_d_gaussian = 0;
     while(estimated_values_gamma_[dim] < 5 && estimated_values_gaussian_[dim]) {
       dim = dim+1;
-      sumv_gamma = sumv_gamma+estimated_values_gamma_[dim];
-      sumv_gaussian = sumv_gaussian+estimated_values_gaussian_[dim];
-      sumv2 = sumv2+observed_counts_[dim];
-      sumv3_gamma = sumv3_gamma+est_gamma_dist_[dim];
-      sumv3_gaussian = sumv3_gaussian+est_gaussian_dist_[dim];
+      sum_gaussian = sum_gaussian+estimated_values_gamma_[dim];
+      sum_gaussian = sum_gaussian+estimated_values_gaussian_[dim];
+      observation_sum = observation_sum+observed_counts_[dim];
+      sum_d_gamma = sum_d_gamma+est_gamma_dist_[dim];
+      sum_d_gaussian = sum_d_gaussian+est_gaussian_dist_[dim];
     }
     
     curr_length = length(est_gaussian_dist_);
     
-    if(sumv_gamma > 0) {
-      estimated_values_gamma__ = c(sumv_gamma, estimated_values_gamma_[dim:curr_length]);
-      estimated_values_gaussian__ = c(sumv_gaussian, estimated_values_gaussian_[dim:curr_length]);
-      est_gamma_dist__ = c(sumv3_gamma, est_gamma_dist_[dim:curr_length]);
-      est_gaussian_dist__ = c(sumv3_gaussian, est_gaussian_dist_[dim:curr_length]);
-      observed_counts__ = c(sumv2, observed_counts_[dim:curr_length]);
+    if(sum_gaussian > 0) {
+      estimated_values_gamma__ = c(sum_gaussian, estimated_values_gamma_[dim:curr_length]);
+      estimated_values_gaussian__ = c(sum_gaussian, estimated_values_gaussian_[dim:curr_length]);
+      est_gamma_dist__ = c(sum_d_gamma, est_gamma_dist_[dim:curr_length]);
+      est_gaussian_dist__ = c(sum_d_gaussian, est_gaussian_dist_[dim:curr_length]);
+      observed_counts__ = c(observation_sum, observed_counts_[dim:curr_length]);
     } else {
       estimated_values_gamma__ =  estimated_values_gamma_;
       estimated_values_gaussian__ = estimated_values_gaussian_;
