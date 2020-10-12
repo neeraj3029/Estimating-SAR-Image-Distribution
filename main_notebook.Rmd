@@ -12,7 +12,7 @@ library(raster)
 
 Step1: Plot the image and Histogram of Pixel values
 ```{r}
-imageName <- "Image59.tiff"
+imageName <- "Image2.tiff"
 img = raster(paste0("SARImages/", imageName))
 plot(img, col = gray.colors(10, start = 0.01, end = 1))
 img[img == 0] = 1
@@ -20,7 +20,7 @@ img[img == 0] = 1
 
 
 ```{r}
-hist(img, nclass=256, maxpixels=10000000, xlab = 'pixel value', ylab = 'Count', main='Observed Frequency Distribution')
+hist(img, nclass=256, maxpixels=10000000, xlab = 'pixel value', ylab = 'Pixel count', main='Observed Frequency Distribution')
 
 ```
 
@@ -52,7 +52,7 @@ for(i in 1:length(observed_counts)) {
   exp_values_gaussian <- c(exp_values_gaussian, e_k_gaussian);
 }
 
-hist(img, nclass=256, maxpixels=10000000, col = 'yellow')
+hist(img, nclass=256, maxpixels=10000000, col = 'yellow', main="Observed Frequency with estimated distributions", xlab="Pixel Values")
 lines(exp_values_gamma, type='l', col='red', lwd=2)
 lines(exp_values_gaussian, type='l', col='blue', lwd=2)
 legend(180, 2500, legend=c("Est. Gamma Dist.", "Est. Gaussian Dist."),
@@ -99,11 +99,11 @@ if(sumv_gaussian > 0) {
 ```
 
 ```{r}
-plot(exp_values_gamma, type='l', col='blue', lwd=2)
+plot(exp_values_gamma, type='l', col='blue', lwd=2, ylab="Pixel Count", xlab="Pixel Values")
 lines(exp_values_gaussian, type='l', col='orange', lwd=2)
 lines(observed_counts, col = 'black', type='l',lwd=2)
-legend(180, 2500, legend=c("Est. Gamma Dist.", "Sample distribution"),
-       col=c("blue", "green"), lty=1:1, cex=0.8)
+legend(160, 2500, legend=c("Observed freq distribution", "Est. Gamma Dist.", "Sample distribution"),
+       col=c("black", "blue", "green"), lty=1:1, cex=0.8)
 ```
 
 

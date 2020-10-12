@@ -17,9 +17,20 @@ One of the advantages of using SAR images is they're independent of weather & at
 
 We employed Chi-Square Goodness-of-Fit (GOF) tests to verify that SAR Images are best modeled with Gamma distribution. A comparative analysis with Normal and Poisson distribution has been conducted.
 
+Gamma distribution: 
+
  - Step 1: Maximum Likelihood Estimation of distribution parameters. For that, we use frequecy parameters from homogeneous patches of SAR Images
 
- - Step 2-ϵ: Before step 2, we merge bins with E(K) < 5 to make Chi Square test work
+<br/>
+
+<center>
+<img src="https://user-images.githubusercontent.com/31539812/95762382-432f4d80-0ccb-11eb-9796-d2b1507cfe89.png" style="height: 250px;">
+</center>
+
+<br/>
+
+ - Step 2-ϵ: Before step 2, we merge bins with E(K) < 5 to make Chi Square test works
+
 
  - Step 2: We compute Chi-Square values, with `Obs` as observed distribution from image patches for different `Exp` arrays frm various estimated distribution
 
