@@ -100,7 +100,7 @@ main <- function(imageName) {
       observed_counts__ = observed_counts_;
     }
     
-    
+    # Finally, Calculating Chi Square GOF values for different distributions based on observed data
     gof_gamma <- Goodness_of_fit(observed_counts__, estimated_values_gamma__)
     gof_gaussian <- Goodness_of_fit(observed_counts__, estimated_values_gaussian__)
     return(c(gof_gamma, gof_gaussian))

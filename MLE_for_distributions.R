@@ -1,4 +1,8 @@
+# returns estimated parameters for distributions based on frequency count using
+# Maximum Likelihood Estimation (MLE)
+
 estimate_gamma_parameters <- function(pixels, plot) {
+  # Thanks to https://tminka.github.io/papers/minka-gamma.pdf , MLE estimation for gamma distribution can be done in just 5 iterations
   mean_of_log <- unname(summary(log(pixels)))[4]
   log_of_mean <- log(unname(summary(pixels))[4])
   mean_ <- unname(summary(pixels))[4]
