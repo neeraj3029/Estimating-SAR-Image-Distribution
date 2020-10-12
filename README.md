@@ -7,7 +7,7 @@ SAR images are high quality terrain images of Earth, produced by illuminating ta
     <img src = "https://bit.ly/30Yx9lW" style="height: 200px; margin: 10px;"/> 
 </div>
 
-<center> <i> Figure: SAR images </i> </center>
+<p align='center'> <i> Figure: SAR images </i> </p>
 
 
 
@@ -47,5 +47,8 @@ We performed Chi-Square GOF tests on six patches of homogeneous SAR Images, the 
 SAR Images are known to be affected by Speckle noise, which arises as a consequence
 of the coherent illumination used by radar. Speckle noise estimation is an important challenge in SAR Imagery. Hence, we estimated the Speckle noise in SAR Images using Equivalent number of looks(ENL)
 
-Further Steps:
+### Further Steps:
 
+### Data Sources
+
+### Developers
