@@ -1,6 +1,6 @@
 # returns estimated parameters for distributions based on frequency count using
 # Maximum Likelihood Estimation (MLE)
-
+library(weibullness)
 estimate_gamma_parameters <- function(pixels, plot) {
   # Thanks to https://tminka.github.io/papers/minka-gamma.pdf , MLE estimation for gamma distribution can be done in just 5 iterations
   mean_of_log <- unname(summary(log(pixels)))[4]
@@ -25,4 +25,9 @@ estimate_gaussian_params <- function(pixels) {
 
 estimate_poission_params <- function(pixels) {
   return(mean(pixels))
+}
+
+estimate_lnorm_params <- function(pixels) {
+  pixels = log(pixels)
+  return(c(mean(pixels), sd(pixels)))
 }

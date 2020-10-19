@@ -1,0 +1,96 @@
+---
+title: "SAR Image Modeling using Chi Square tests"
+output: html_notebook
+---
+
+```{r}
+library('tiff')
+library(EBImage)
+library(raster)
+```
+
+
+Step1: Plot the image and Histogram of Pixel values
+```{r}
+imageName <- "Image5.tiff"
+img = raster(paste0("SARImages/", imageName))
+plot(img, col = gray.colors(10, start = 0.01, end = 1))
+img[img == 0] = 1
+```
+
+
+```{r}
+hist(img, nclass=256, maxpixels=10000000, xlab = 'pixel value', ylab = 'Pixel count', main='Observed Frequency Distribution')
+```
+
+Step2: Parameter esimation using Maximum Likelihood Estimation. 
+File estimate_params.R has implementation of MLE estimator functions.
+```{r}
+    gamma_params <- estimate_gamma_parameters(img[], FALSE);
+    gaussian_params <- estimate_gaussian_params(img[]);
+    poisson_params <- estimate_poission_params(img[]);
+    lnorm_params <- estimate_lnorm_params(img[]);
+```
+
+```{r}
+
+total_samples <- length(img);
+observed_counts <- pixelCounter(img[], 256);
+
+    est_gamma_dist <- dgamma(x = seq(1, 256, by=1), shape = gamma_params[1], scale = gamma_params[2]);
+    
+    est_gaussian_dist <- dnorm(x = seq(1, 256, by=1), mean = gaussian_params[1], sd = gaussian_params[2]);
+    est_lnorm_dist <- dlnorm(x = seq(1, 256, by=1), mean = lnorm_params[1], sd = lnorm_params[2]);
+
+
+exp_values_gamma <- c();
+exp_values_gaussian <- c();
+exp_values_lnorm <- c();
+
+for(i in 1:length(observed_counts)) {
+      e_k_gamma = est_gamma_dist[i] * total_samples;
+      e_k_gaussian = est_gaussian_dist[i] * total_samples;
+      e_k_lnorm = est_lnorm_dist[i] * total_samples;
+      exp_values_gamma <- c(exp_values_gamma, e_k_gamma);
+      exp_values_gaussian <- c(exp_values_gaussian, e_k_gaussian);
+      exp_values_lnorm <- c(exp_values_lnorm, e_k_lnorm);
+    }
+
+hist(img, nclass=256, maxpixels=10000000, col = 'yellow', main="Observed Frequency with estimated distributions", xlab="Pixel Values")
+lines(exp_values_gamma, type='l', col='red', lwd=2)
+lines(exp_values_gaussian, type='l', col='blue', lwd=2)
+lines(exp_values_lnorm, type='l', col='green', lwd=2)
+legend(180, 2500, legend=c("Est. Gamma Dist.", "Est. Gaussian Dist."),
+       col=c("red", "blue"), lty=1:1, cex=0.8)
+
+
+```
+
+
+```{r}
+gof_gamma_input = shrink(exp_values_gamma, observed_counts)
+gof_gaussian_input = shrink(exp_values_gaussian, observed_counts)
+gof_lnorm_input = shrink(exp_values_lnorm, observed_counts)
+```
+
+```{r}
+gof_gamma <- Goodness_of_fit(gof_gamma_input$obs, gof_gamma_input$exp)
+gof_gaussian <- Goodness_of_fit(gof_gaussian_input$obs, gof_gaussian_input$exp)
+gof_lnorm <- Goodness_of_fit(gof_lnorm_input$obs, gof_lnorm_input$exp)
+```
+
+```{r}
+print("The Chi-Square values are as follows")
+print(paste0("Gamma: ", gof_gamma))
+print(paste0("Gaussian: ", gof_gaussian))
+print(paste0("Log Normal: ", gof_lnorm))
+```
+```{r}
+print(paste0("": ENL(img[])))
+```
+
+```{r}
+
+print(paste0("Expected Number of Looks for the image ", ENL(img[])))
+```
+

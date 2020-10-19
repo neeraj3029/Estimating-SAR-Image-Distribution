@@ -12,98 +12,37 @@ main <- function(imageName) {
     gamma_params <- estimate_gamma_parameters(img[], FALSE);
     gaussian_params <- estimate_gaussian_params(img[]);
     poisson_params <- estimate_poission_params(img[]);
+    lnorm_params <- estimate_lnorm_params(img[]);
     
     total_samples <- length(img);
     observed_counts <- pixelCounter(img[], 256);
     
     est_gamma_dist <- dgamma(x = seq(1, 256, by=1), shape = gamma_params[1], scale = gamma_params[2]);
-    
     est_gaussian_dist <- dnorm(x = seq(1, 256, by=1), mean = gaussian_params[1], sd = gaussian_params[2]);
-    
+    est_lnorm_dist <- dlnorm(x = seq(1, 256, by=1), mean = lnorm_params[1], sd = lnorm_params[2]);
     
     exp_values_gamma <- c();
     exp_values_gaussian <- c();
+    exp_values_lnorm <- c();
     
     for(i in 1:length(observed_counts)) {
       e_k_gamma = est_gamma_dist[i] * total_samples;
       e_k_gaussian = est_gaussian_dist[i] * total_samples;
+      e_k_lnorm = est_lnorm_dist[i] * total_samples;
       exp_values_gamma <- c(exp_values_gamma, e_k_gamma);
       exp_values_gaussian <- c(exp_values_gaussian, e_k_gaussian);
+      exp_values_lnorm <- c(exp_values_lnorm, e_k_lnorm);
     }
   
-    #Next step would be to define a function that merges adjacent bins
-    
-    #Enforcing E(k) >= 5 from right end
-    
-    sum_gaussian = 0
-    sum_gaussian = 0
-    sum2 = 0
-    dim = length(exp_values_gamma)
-    sum3_gamma = 0;
-    sum3_gaussian = 0;
-    for (i in seq(length(exp_values_gamma),1,by=-1)){
-      if(exp_values_gamma[i] && exp_values_gaussian[i] >= 5){
-        dim = i;
-        break;
-      }
-      sum_gaussian = sum_gaussian + exp_values_gamma[i]; 
-      sum_gaussian = sum_gaussian + exp_values_gaussian[i];
-      sum2 = sum2 + observed_counts[i]; 
-      sum3_gamma = sum3_gamma + est_gamma_dist[i];
-      sum3_gaussian = sum3_gaussian + est_gaussian_dist[i];
-    }
-    
-    if(sum_gaussian > 0) {
-      estimated_values_gamma_ = c(exp_values_gamma[1:dim], sum_gaussian);
-      estimated_values_gaussian_ = c(exp_values_gaussian[1:dim], sum_gaussian);
-      est_gamma_dist_ = c(est_gamma_dist[1:dim], sum3_gamma);
-      est_gaussian_dist_ = c(est_gaussian_dist[1:dim], sum3_gaussian);
-      observed_counts_ = c(observed_counts[1:dim], sum2);
-    } else {
-      estimated_values_gamma_ = exp_values_gamma
-      estimated_values_gaussian_ = exp_values_gaussian
-      est_gamma_dist_ = est_gamma_dist
-      est_gaussian_dist_ = est_gaussian_dist
-      observed_counts_ = observed_counts
-    }
-
-    #Enforcing E(k) >= 5 from left end
-    
-    dim = 1;
-    sum_gaussian = 0;
-    sum_gaussian = 0;
-    observation_sum = 0;
-    sum_d_gamma = 0;
-    sum_d_gaussian = 0;
-    while(estimated_values_gamma_[dim] < 5 && estimated_values_gaussian_[dim]) {
-      dim = dim+1;
-      sum_gaussian = sum_gaussian+estimated_values_gamma_[dim];
-      sum_gaussian = sum_gaussian+estimated_values_gaussian_[dim];
-      observation_sum = observation_sum+observed_counts_[dim];
-      sum_d_gamma = sum_d_gamma+est_gamma_dist_[dim];
-      sum_d_gaussian = sum_d_gaussian+est_gaussian_dist_[dim];
-    }
-    
-    curr_length = length(est_gaussian_dist_);
-    
-    if(sum_gaussian > 0) {
-      estimated_values_gamma__ = c(sum_gaussian, estimated_values_gamma_[dim:curr_length]);
-      estimated_values_gaussian__ = c(sum_gaussian, estimated_values_gaussian_[dim:curr_length]);
-      est_gamma_dist__ = c(sum_d_gamma, est_gamma_dist_[dim:curr_length]);
-      est_gaussian_dist__ = c(sum_d_gaussian, est_gaussian_dist_[dim:curr_length]);
-      observed_counts__ = c(observation_sum, observed_counts_[dim:curr_length]);
-    } else {
-      estimated_values_gamma__ =  estimated_values_gamma_;
-      estimated_values_gaussian__ = estimated_values_gaussian_;
-      est_gamma_dist__ = est_gamma_dist_;
-      est_gaussian_dist__ = est_gaussian_dist_;
-      observed_counts__ = observed_counts_;
-    }
+    gof_gamma_input = shrink(exp_values_gamma, observed_counts)
+    gof_gaussian_input = shrink(exp_values_gaussian, observed_counts)
+    gof_lnorm_input = shrink(exp_values_lnorm, observed_counts)
     
     # Finally, Calculating Chi Square GOF values for different distributions based on observed data
-    gof_gamma <- Goodness_of_fit(observed_counts__, estimated_values_gamma__)
-    gof_gaussian <- Goodness_of_fit(observed_counts__, estimated_values_gaussian__)
-    return(c(gof_gamma, gof_gaussian))
+    gof_gamma <- Goodness_of_fit(gof_gamma_input$obs, gof_gamma_input$exp)
+    gof_gaussian <- Goodness_of_fit(gof_gaussian_input$obs, gof_gaussian_input$exp)
+    gof_lnorm <- Goodness_of_fit(gof_lnorm_input$obs, gof_lnorm_input$exp)
+    return(list("ENL" = ENL(img[]),"observed_counts"=observed_counts ,"exp_values_lnorm"=exp_values_lnorm, "exp_values_gamma" = exp_values_gamma, "exp_values_gaussian" = exp_values_gaussian, "gof" = c(gof_gamma, gof_gaussian, gof_lnorm)))
 }
 
 
